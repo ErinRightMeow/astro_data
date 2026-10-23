@@ -10,6 +10,8 @@ Each answer shows how many people have the factor, how many chance would predict
 2. **`pipeline/aggregate.py`** computes each chart with [Astronomy Engine](https://github.com/cosinekitty/astronomy) (MIT). It then writes one small JSON file of observed counts, expected counts and variances for every group and chart factor.
 3. **`site/`** is a static page that loads that JSON and does the statistics in the browser. It needs no server, so GitHub Pages hosts it for free.
 
+The site also has three methods pages that explain whole-chart analysis with live demos: `vectors.html` (turning a chart into numbers), `trees.html` (gradient-boosted trees, with a small boosting demo on simulated people) and `gnn.html` (graph neural networks). They compute planet positions in the browser with a copy of Astronomy Engine in `site/js/vendor/`.
+
 The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from the Actions tab. **Deploy site** publishes `site/` to GitHub Pages.
 
 ## The statistics
