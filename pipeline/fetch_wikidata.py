@@ -17,6 +17,7 @@ import json
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -75,17 +76,29 @@ def categorize(labels, rules):
     return sorted(out)
 
 
-def run_query(start, end, endpoint, retries=4):
-    body = urllib.parse.urlencode({"query": QUERY % {"start": start, "end": end}}).encode()
-    req = urllib.request.Request(endpoint, data=body, headers={
+def _post(url, body, hops=5):
+    """POST, following redirects (urllib won't re-POST on a 307/308)."""
+    req = urllib.request.Request(url, data=body, headers={
         "Accept": "text/csv",
         "Content-Type": "application/x-www-form-urlencoded",
         "User-Agent": "astro-trends research site (open-source; aggregate statistics only)",
     })
+    try:
+        with urllib.request.urlopen(req, timeout=900) as res:
+            return res.read().decode("utf-8")
+    except urllib.error.HTTPError as err:
+        location = err.headers.get("Location")
+        if err.code in (301, 302, 303, 307, 308) and location and hops > 0:
+            print(f"  redirected to {location}", file=sys.stderr)
+            return _post(urllib.parse.urljoin(url, location), body, hops - 1)
+        raise
+
+
+def run_query(start, end, endpoint, retries=4):
+    body = urllib.parse.urlencode({"query": QUERY % {"start": start, "end": end}}).encode()
     for attempt in range(retries):
         try:
-            with urllib.request.urlopen(req, timeout=900) as res:
-                return list(csv.DictReader(io.StringIO(res.read().decode("utf-8"))))
+            return list(csv.DictReader(io.StringIO(_post(endpoint, body))))
         except Exception as err:  # network hiccups: back off and retry
             if attempt == retries - 1:
                 raise
