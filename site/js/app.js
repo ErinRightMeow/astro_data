@@ -151,7 +151,7 @@ function runTest() {
         <div class="stat"><div class="label">p / corrected for ${sessionTests.size} test${sessionTests.size === 1 ? "" : "s"}</div><div class="value">${fmtP(r.p)} <span class="muted small">/ ${fmtP(q)}</span></div></div>
       </div>
       ${rangeBar(r)}
-      <p class="muted small">Out of ${fmtN(known)} ${esc(cat)} whose ${esc(data.groups[g].label.toLowerCase())} is known.
+      <p class="muted small">Out of ${fmtN(known)} ${esc(cat)} whose ${esc(data.groups[g].label.replace(/ (sign|aspect|house)$/, (m) => m.toLowerCase()))} is known.
         Among everyone in the dataset, ${(data.splits.explore.baseShare[f] * 100).toFixed(1)}% have ${esc(feature.label)}.</p>
       <div class="actions">
         <button id="confirm-btn">Check on held-back data</button>
@@ -159,7 +159,7 @@ function runTest() {
       </div>
       <div id="confirm-out"></div>
     </div>`;
-  $("confirm-btn").onclick = () => runConfirm(c, f, r);
+  $("confirm-btn").onclick = () => runConfirm(c, f, r, v !== "none");
   $("share-btn").onclick = async () => {
     try {
       await navigator.clipboard.writeText(location.href);
@@ -170,7 +170,7 @@ function runTest() {
   };
 }
 
-function runConfirm(c, f, explored) {
+function runConfirm(c, f, explored, wasFinding) {
   const r = cell("confirm", c, f);
   const out = $("confirm-out");
   if (!r || r.observed < MIN_COUNT) {
@@ -179,6 +179,14 @@ function runConfirm(c, f, explored) {
   }
   const sameWay = (r.ratio > 1) === (explored.ratio > 1);
   const ok = sameWay && r.p < 0.05;
+  if (!wasFinding) {
+    out.innerHTML = `<div class="confirm">
+      <strong>${r.p < 0.05 ? "The held-back data shows a difference." : "The held-back data agrees: no reliable difference."}</strong>
+      In the held-back 30%, the ratio is ${fmtR(r.ratio)}× (${fmtR(r.low)}–${fmtR(r.high)}), ${pIs(r.p)}.
+      ${r.p < 0.05 ? "Since the explored data showed nothing, this is most likely chance." : ""}
+    </div>`;
+    return;
+  }
   out.innerHTML = `<div class="confirm">
     <strong>${ok ? "Confirmed on fresh data." : "Not confirmed on fresh data."}</strong>
     In the held-back 30%, the ratio is ${fmtR(r.ratio)}× (${fmtR(r.low)}–${fmtR(r.high)}), ${pIs(r.p)}.
