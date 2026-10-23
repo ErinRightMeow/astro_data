@@ -1,0 +1,101 @@
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --text: #1d1c1a;
+  --muted: #6b6862;
+  --border: #e3e0da;
+  --accent: #4a52c9;
+  --accent-soft: #e9eafb;
+  --good: #1f7a4d;
+  --good-soft: #e3f3ea;
+  --warn: #9a5b00;
+  --warn-soft: #fbf0dc;
+  --bar: #c9c6bf;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615;
+    --surface: #201f1e;
+    --text: #ecebe8;
+    --muted: #a19d96;
+    --border: #36342f;
+    --accent: #9aa0ff;
+    --accent-soft: #2a2c4a;
+    --good: #6fd19f;
+    --good-soft: #17301f;
+    --warn: #f0b54f;
+    --warn-soft: #3a2c12;
+    --bar: #4a4741;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+header { padding-top: 40px; padding-bottom: 8px; }
+h1 { font-size: 2rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 1.15rem; margin: 0 0 12px; }
+.tagline { color: var(--muted); margin: 0; font-size: 1.05rem; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+}
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.row h2 { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.9rem; }
+.sentence { line-height: 2.6; margin: 0 0 4px; }
+select, button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  max-width: 100%;
+}
+button { cursor: pointer; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; padding: 8px 18px; }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.banner {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 16px;
+}
+.result { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+.verdict { font-size: 1.2rem; font-weight: 600; margin: 0 0 8px; }
+.verdict.yes { color: var(--good); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+.stat { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.stat .label { font-size: 0.8rem; color: var(--muted); }
+.stat .value { font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.range { position: relative; height: 34px; margin: 8px 0 4px; }
+.range .axis { position: absolute; top: 16px; left: 0; right: 0; height: 2px; background: var(--bar); }
+.range .one { position: absolute; top: 4px; width: 2px; height: 26px; background: var(--muted); }
+.range .ci { position: absolute; top: 12px; height: 10px; border-radius: 5px; background: var(--accent-soft); border: 1px solid var(--accent); }
+.range .dot { position: absolute; top: 9px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--accent); }
+.range-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.confirm { margin-top: 12px; padding: 12px 14px; border-radius: 8px; background: var(--bg); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.chips button { font-size: 0.9rem; border-radius: 999px; padding: 4px 12px; }
+table { width: 100%; min-width: 560px; border-collapse: collapse; margin-top: 12px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+th { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; }
+tr.sig td:first-child { font-weight: 600; }
+.tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: var(--good-soft); color: var(--good); white-space: nowrap; }
+.table-scroll { overflow-x: auto; }
+.methods ol { padding-left: 20px; margin: 0; }
+.methods li { margin-bottom: 8px; }
+footer { padding-bottom: 40px; }
+a { color: var(--accent); }

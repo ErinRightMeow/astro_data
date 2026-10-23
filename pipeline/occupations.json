@@ -1,0 +1,19 @@
+{
+  "note": "Maps Wikidata occupation labels (English) to the site's groups. A label matches a group when it contains one of the group's words as a whole word, and none of its 'except' words.",
+  "groups": {
+    "Athletes": {"words": ["athlete", "player", "footballer", "boxer", "cyclist", "swimmer", "runner", "sprinter", "wrestler", "skier", "gymnast", "fencer", "rower", "golfer", "jockey", "racing driver", "skater", "high jumper", "long jumper", "pole vaulter", "hurdler", "javelin thrower", "discus thrower", "shot putter", "mountaineer", "judoka", "weightlifter", "biathlete", "canoeist", "sailor", "triathlete", "sport shooter", "archer"],
+             "except": ["chess", "poker", "video game", "card game", "go player", "esports"]},
+    "Military": {"words": ["military officer", "military personnel", "soldier", "military leader", "general", "admiral", "military commander"], "except": ["attorney general", "secretary-general", "general manager", "general practitioner"]},
+    "Scientists": {"words": ["scientist", "physicist", "chemist", "mathematician", "biologist", "astronomer", "geologist", "botanist", "zoologist", "biochemist", "geneticist", "neuroscientist", "economist", "psychologist"]},
+    "Physicians": {"words": ["physician", "surgeon", "psychiatrist", "medical doctor"]},
+    "Writers": {"words": ["writer", "novelist", "poet", "playwright", "essayist", "screenwriter", "author"]},
+    "Journalists": {"words": ["journalist"]},
+    "Actors": {"words": ["actor", "actress"], "except": ["voice actor"]},
+    "Musicians": {"words": ["musician", "singer", "composer", "guitarist", "pianist", "violinist", "rapper", "songwriter", "drummer", "cellist", "organist", "conductor"]},
+    "Painters": {"words": ["painter"]},
+    "Politicians": {"words": ["politician"]},
+    "Lawyers": {"words": ["lawyer", "judge", "jurist", "barrister", "attorney"], "except": ["attorney general"]},
+    "Clergy": {"words": ["priest", "pastor", "bishop", "rabbi", "imam", "monk", "nun", "theologian", "minister of religion"]},
+    "Businesspeople": {"words": ["businessperson", "entrepreneur", "business executive", "banker"]}
+  }
+}

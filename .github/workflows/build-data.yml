@@ -1,0 +1,37 @@
+name: Build data
+# Downloads open data, computes charts and writes the site's data files.
+# Run it from the Actions tab ("Run workflow"); it also refreshes monthly.
+on:
+  workflow_dispatch:
+    inputs:
+      start: { description: "First birth year", default: "1850" }
+      end: { description: "Last birth year (exclusive)", default: "2006" }
+  schedule:
+    - cron: "0 6 2 * *"
+permissions:
+  contents: write
+jobs:
+  wikidata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: Download people from Wikidata
+        run: python pipeline/fetch_wikidata.py wikidata.csv --start "${{ inputs.start || '1850' }}" --end "${{ inputs.end || '2006' }}"
+      - name: Compute charts and statistics
+        run: >
+          python pipeline/aggregate.py wikidata.csv site/data/wikidata.json
+          --name "Famous people (Wikidata)"
+          --description "People in Wikidata with an exact birth date and an occupation. Birth times are unknown, so there are no Ascendant or house results."
+          --source "Wikidata (CC0)"
+          --register site/data/datasets.json
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/data
+          git diff --cached --quiet || git commit -m "Update Wikidata dataset"
+          git push

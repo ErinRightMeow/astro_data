@@ -1,0 +1,44 @@
+{
+  "note": "Traditional keywords, written for this project from public-domain tradition (Ptolemy, Lilly) and from the claims Michel Gauquelin tested. They describe what astrologers claim, not what the data shows.",
+  "planets": {
+    "Sun": "vitality, authority, leadership, fame",
+    "Moon": "emotion, home, the public, imagination",
+    "Mercury": "communication, intellect, writing, trade",
+    "Venus": "love, art, beauty, harmony",
+    "Mars": "action, courage, conflict, sport, surgery",
+    "Jupiter": "expansion, law, religion, public life",
+    "Saturn": "discipline, structure, patience, science",
+    "Uranus": "innovation, rebellion, technology",
+    "Neptune": "imagination, mysticism, the arts",
+    "Pluto": "transformation, power, depth"
+  },
+  "signs": {
+    "Aries": "fire, cardinal: initiative, boldness",
+    "Taurus": "earth, fixed: steadiness, comfort",
+    "Gemini": "air, mutable: curiosity, words",
+    "Cancer": "water, cardinal: nurture, home",
+    "Leo": "fire, fixed: self-expression, pride",
+    "Virgo": "earth, mutable: precision, service",
+    "Libra": "air, cardinal: balance, partnership",
+    "Scorpio": "water, fixed: intensity, secrecy",
+    "Sagittarius": "fire, mutable: adventure, belief",
+    "Capricorn": "earth, cardinal: ambition, duty",
+    "Aquarius": "air, fixed: independence, ideals",
+    "Pisces": "water, mutable: empathy, dreams"
+  },
+  "aspects": {
+    "conjunction": "0 degrees: the two planets act together",
+    "sextile": "60 degrees: easy opportunity",
+    "square": "90 degrees: tension and drive",
+    "trine": "120 degrees: natural flow",
+    "opposition": "180 degrees: pull between opposites"
+  },
+  "claims": [
+    {"planet": "Mars", "categories": ["Athletes", "Military"], "source": "Gauquelin's 'Mars effect' and tradition"},
+    {"planet": "Saturn", "categories": ["Scientists", "Physicians"], "source": "Gauquelin"},
+    {"planet": "Jupiter", "categories": ["Actors", "Politicians"], "source": "Gauquelin"},
+    {"planet": "Moon", "categories": ["Writers", "Politicians"], "source": "Gauquelin"},
+    {"planet": "Venus", "categories": ["Painters", "Musicians", "Actors"], "source": "tradition"},
+    {"planet": "Mercury", "categories": ["Writers", "Journalists"], "source": "tradition"}
+  ]
+}

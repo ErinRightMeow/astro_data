@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Astro Trends</title>
+  <meta name="description" content="Test astrology claims against real birth data, with honest statistics.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <h1>Astro Trends</h1>
+    <p class="tagline">Test an astrology claim against real birth data and see whether the numbers back it up.</p>
+  </header>
+
+  <main class="wrap">
+    <div id="demo-banner" class="banner" hidden>
+      This is <strong>fake demo data</strong> for testing the site. Results here say nothing about real people.
+    </div>
+
+    <section class="card" aria-labelledby="dataset-h">
+      <div class="row">
+        <h2 id="dataset-h">Dataset</h2>
+        <select id="dataset" aria-label="Dataset"></select>
+      </div>
+      <p id="dataset-info" class="muted"></p>
+    </section>
+
+    <section class="card" aria-labelledby="test-h">
+      <h2 id="test-h">Test a hypothesis</h2>
+      <p class="sentence">
+        Are
+        <select id="category" aria-label="Group of people"></select>
+        more often born with
+        <select id="feature" aria-label="Chart factor"></select>
+        ?
+      </p>
+      <p id="meaning" class="muted small"></p>
+      <button id="run" class="primary">Test it</button>
+      <div id="result" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="scan-h">
+      <h2 id="scan-h">Scan a group</h2>
+      <p class="muted">Check every factor of one kind at once. Because this runs many tests, results are corrected for multiple comparisons.</p>
+      <p class="sentence">
+        Scan
+        <select id="scan-category" aria-label="Group to scan"></select>
+        for
+        <select id="scan-kind" aria-label="Kind of factor">
+          <option value="sign">planet signs</option>
+          <option value="aspect">aspects</option>
+          <option value="asc">Ascendant</option>
+          <option value="house">houses</option>
+        </select>
+        <select id="scan-planet" aria-label="Planet"><option value="">all planets</option></select>
+        <button id="scan-run">Scan</button>
+      </p>
+      <div id="claims" class="chips" aria-label="Claims to test"></div>
+      <div id="scan-result"></div>
+    </section>
+
+    <section class="card methods" aria-labelledby="methods-h">
+      <h2 id="methods-h">How the numbers work</h2>
+      <ol>
+        <li><strong>Fair expectation.</strong> Each group is compared with everyone else in the dataset born in the same decade and country. Slow planets like Pluto mark birth years and birth seasons vary by country, so a plain "1 in 12" would mislead.</li>
+        <li><strong>Effect size first.</strong> The ratio shows how many more or fewer people have the factor than expected, with a 95% range of plausible values.</li>
+        <li><strong>Many tests, corrected.</strong> Test enough ideas and some will look significant by luck. Every result is adjusted (Benjamini-Hochberg) for all the tests you ran this session.</li>
+        <li><strong>Confirm on fresh data.</strong> 30% of people are held back. A finding is only convincing if it shows up again in data you did not explore.</li>
+        <li><strong>Small groups hidden.</strong> Counts under 10 are not shown.</li>
+        <li><strong>Who is in the data matters.</strong> Famous people are not a random sample of humanity. A Sun-sign result can come from school cut-off dates (older children excel in youth sports), not the sky.</li>
+      </ol>
+      <p class="muted small">Without a birth time the Ascendant and houses are unknown, and fast factors like the Moon's sign are used only when they were the same all day.</p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT).
+    <span id="source-line"></span>
+  </footer>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
