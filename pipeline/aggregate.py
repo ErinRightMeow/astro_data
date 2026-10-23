@@ -7,7 +7,7 @@ blank), utc_offset (hours, may be blank), lat, lon, country, categories
 For every (category, feature) pair and each data split the output holds the
 observed count, the count expected by chance and its variance. "Chance" is
 the feature's share among everyone else in the dataset (people outside the
-category) born in the same decade and country, so slow planets (which mark
+category) born in the same year and country, so slow planets (which mark
 birth years) and national birth patterns don't masquerade as astrology.
 
 People are split once and for all by a hash of their id: 70% "explore",
@@ -73,8 +73,11 @@ def aggregate(rows, results, min_category):
 
     countries = Counter(r["country"] or "Unknown" for r, _ in kept)
     top = [c for c, _ in countries.most_common(TOP_COUNTRIES) if c != "Unknown"]
-    decades = sorted({int(r["birth_date"][:4]) // 10 * 10 for r, _ in kept})
-    strata = [f"{d}s {c}" for d in decades for c in top + ["Other"]]
+    # Strata are birth year x country. Coarser strata (decades) let slow
+    # planets stand in for "born late or early in the decade", which tracks
+    # how occupations change over time rather than anything astrological.
+    years = sorted({int(r["birth_date"][:4]) for r, _ in kept})
+    strata = [f"{y} {c}" for y in years for c in top + ["Other"]]
     s_index = {s: i for i, s in enumerate(strata)}
 
     S, F, G, C = len(strata), len(features), len(groups), len(categories)
@@ -86,7 +89,7 @@ def aggregate(rows, results, min_category):
     for row, (feats, known) in kept:
         sp = split_of(row["id"])
         country = row["country"] if row["country"] in top else "Other"
-        s = s_index[f"{int(row['birth_date'][:4]) // 10 * 10}s {country}"]
+        s = s_index[f"{int(row['birth_date'][:4])} {country}"]
         fi = np.array([f_index[f] for f in feats], dtype=int)
         gi = np.array([g_index[g] for g in known], dtype=int)
         allf[sp, s, fi] += 1

@@ -14,7 +14,7 @@ The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from t
 
 ## The statistics
 
-- **Expected counts:** each group is compared with everyone else in the dataset born in the same decade and country. That keeps birth-year patterns (slow planets) and national birth seasons from looking like astrology.
+- **Expected counts:** each group is compared with everyone else in the dataset born in the same year and country. That keeps birth-year patterns (slow planets) and national birth seasons from looking like astrology.
 - **Date-only records:** these use only the factors that were the same all day long. For example, the Moon's sign counts only if it didn't change sign that day. The Ascendant and houses need a birth time.
 - **Multiple comparisons:** p-values are corrected with Benjamini-Hochberg across the visitor's session, or across a scan.
 - **Small groups:** groups under 10 people are hidden.
