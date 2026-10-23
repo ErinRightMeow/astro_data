@@ -1,5 +1,9 @@
 [
   {
+    "file": "wikidata.json",
+    "name": "Famous people (Wikidata)"
+  },
+  {
     "file": "demo.json",
     "name": "Demo data (fake)"
   }
