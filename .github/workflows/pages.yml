@@ -5,7 +5,7 @@ on:
     paths: ["site/**"]
   workflow_dispatch:
   workflow_run:
-    workflows: ["Build data"]
+    workflows: ["Build data", "Build quiz deck"]
     types: [completed]
 permissions:
   contents: read

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess the Chart</title>
+  <meta name="description" content="Practice guessing a natal chart from what you know about a person, and find out if you beat chance.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <p class="small"><a href="./">← Astro Trends</a></p>
+    <h1>Guess the Chart</h1>
+    <p class="tagline">Read about a real person, guess part of their birth chart, and see whether your hit rate beats luck.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card" aria-labelledby="mode-h">
+      <div class="row">
+        <h2 id="deck-h">People</h2>
+        <select id="deck" aria-labelledby="deck-h">
+          <option value="gq">Gauquelin records (famous Europeans and Americans)</option>
+          <option value="mine">My people (people you know)</option>
+        </select>
+      </div>
+      <div class="row spaced">
+        <h2 id="mode-h">What to guess</h2>
+        <select id="mode" aria-label="What to guess">
+          <option value="asc-element">Rising sign's element</option>
+          <option value="asc-sign">Rising sign</option>
+          <option value="moon-element">Moon sign's element</option>
+          <option value="moon-sign">Moon sign</option>
+          <option value="pick">Pick the real chart (1 of 3)</option>
+        </select>
+      </div>
+      <label class="small check" id="show-name-row"><input type="checkbox" id="show-name"> Show names before guessing (lets you look people up, but don't look up their charts)</label>
+    </section>
+
+    <section class="card" aria-labelledby="person-h" id="play">
+      <h2 id="person-h">This person</h2>
+      <p id="loading" class="muted">Loading people…</p>
+      <dl id="clues" class="clues" hidden></dl>
+      <div id="choices" class="choices" role="group" aria-label="Your guess"></div>
+      <div id="feedback" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="mine-h" id="mine" hidden>
+      <h2 id="mine-h">My people</h2>
+      <p class="muted small">Add people whose birth time you know, with a few lines on what they're like. Their charts stay hidden until you guess, so add people in a batch and play later, when you've half forgotten what you typed. Everything stays in this browser; only a place name you search is sent to <a href="https://open-meteo.com/en/docs/geocoding-api">Open-Meteo</a> to look up its coordinates and time zone.</p>
+      <form id="add-form" class="form">
+        <label>Name or nickname <input id="f-name" required maxlength="80"></label>
+        <label class="full">What you know about them <textarea id="f-notes" rows="3" maxlength="1000" placeholder="Personality, looks, job, how they act in a crisis…"></textarea></label>
+        <label>Birth date <input id="f-day" type="date" required></label>
+        <label>Birth time <input id="f-time" type="time" required></label>
+        <label class="full">Birthplace
+          <span class="inline"><input id="f-place" placeholder="Town or city"><button type="button" id="f-search">Find</button></span>
+        </label>
+        <label class="full" id="f-results-row" hidden>Pick the place <select id="f-results"></select></label>
+        <details class="full" id="f-manual">
+          <summary>Or enter coordinates yourself</summary>
+          <div class="form">
+            <label>Latitude (north +) <input id="f-lat" type="number" step="any" min="-66" max="66"></label>
+            <label>Longitude (east +) <input id="f-lon" type="number" step="any" min="-180" max="180"></label>
+            <label>Hours ahead of UTC at birth <input id="f-offset" type="number" step="0.25" min="-12" max="14"></label>
+          </div>
+        </details>
+        <p class="full"><button class="primary" type="submit">Add person</button> <span id="f-status" class="small muted" aria-live="polite"></span></p>
+      </form>
+      <div id="mine-list"></div>
+      <div class="actions">
+        <button id="export" type="button">Save a backup file</button>
+        <label class="button-like">Load a backup file <input id="import" type="file" accept="application/json,.json" hidden></label>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="score-h">
+      <div class="row">
+        <h2 id="score-h">Your score</h2>
+        <button id="reset" class="small">Start over</button>
+      </div>
+      <div id="score" class="stats"></div>
+      <p id="verdict" class="verdict-line"></p>
+      <p class="muted small" id="score-note"></p>
+    </section>
+
+    <section class="card methods" aria-labelledby="how-h">
+      <h2 id="how-h">How to train, and how this keeps score honestly</h2>
+      <ol>
+        <li><strong>Start coarse.</strong> Guess the element of the rising sign before the exact sign. Pure guessing gets about 1 in 4, so real skill would show up sooner.</li>
+        <li><strong>Chance is worked out for you.</strong> At European latitudes some signs rise much more often than others (Virgo and Libra rise slowly, so they're common). Each guess counts as lucky in proportion to how common that answer is in the deck, so always picking the most common sign doesn't count as skill.</li>
+        <li><strong>The birth day is hidden.</strong> The date would give away the Sun sign and narrow down the Moon. You see the birth year, which only fixes the slow planets.</li>
+        <li><strong>Give it 100 guesses.</strong> Short runs swing wildly. If you do beat chance, start over and see if a fresh 100 does it again. One good run in twenty happens by luck.</li>
+        <li><strong>With people you know,</strong> you already know their birthday, so the Sun sign is left out of their charts. The rising sign's luck comes from how often each sign rises at their birthplace's latitude.</li>
+        <li><strong>"Pick the real chart"</strong> is the format of the Carlson (1985) and Vernon Clark studies: one real chart and two decoys (from other people in the deck, or for your own people, the sky over their birthplace at random other times). Luck gets exactly 1 in 3.</li>
+      </ol>
+      <p class="muted small">Your guesses stay in this browser and are never sent anywhere.</p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Birth data: <a href="https://opengauquelin.org">Open Gauquelin Database</a> (CC BY-SA 4.0), from civil-register birth records collected by Michel and Françoise Gauquelin.
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT). Whole-sign Ascendant.
+    <span id="built"></span>
+  </footer>
+
+  <script src="js/vendor/astronomy.browser.min.js"></script>
+  <script type="module" src="js/guess.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent / "pipeline"))
+from build_quiz import birth_utc, card, fix_flipped_longitudes, parse_offset, read_rows  # noqa: E402
+
+
+def test_offsets():
+    assert parse_offset("+01:00") == 1
+    assert parse_offset("-05:00") == -5
+    assert abs(parse_offset("+00:09:21") - (9 / 60 + 21 / 3600)) < 1e-9
+    assert parse_offset("0.5") == 0.5
+
+
+def test_birth_time_in_utc():
+    # Paris mean time was 9 min 21 s ahead of Greenwich.
+    assert birth_utc({"DATE": "1900-01-01 00:09:21", "TZO": "+00:09:21"}) == datetime(1900, 1, 1, tzinfo=timezone.utc)
+    assert birth_utc({"DATE-UT": "1931-04-07 10:00"}) == datetime(1931, 4, 7, 10, tzinfo=timezone.utc)
+
+
+def test_card_from_semicolon_csv():
+    text = "OGID;FNAME;GNAME;DATE;TZO;LG;LAT;CY;G;OCCU\nlacaus-roger-1931-04-07;LACAUS;Roger;1931-04-07 10:00;+00:00;2.35;43.2;FR;M;rugby-player\n"
+    row = next(iter(read_rows(text)))
+    c = card(row)
+    assert c["name"] == "Roger Lacaus"
+    assert c["occ"] == "Rugby player"
+    assert c["sun"] == "Aries"
+    assert c["year"] == 1931
+    assert "day" not in c and "month" not in c
+
+
+def test_unusable_rows_are_skipped():
+    assert card({"DATE": "", "TZO": "", "LG": "2", "LAT": "48", "OCCU": "painter"}) is None
+    assert card({"DATE-UT": "1900-01-01 00:00", "LG": "2", "LAT": "48", "OCCU": ""}) is None
+
+
+def test_flipped_longitudes_are_repaired():
+    aude = [{"CY": "FR", "C2": "11", "LG": str(x)} for x in (2.35, 2.8, 2.9, 3.0, 2.5)]
+    paraza = {"CY": "FR", "C2": "11", "LG": "-2.83"}
+    brittany = [{"CY": "FR", "C2": "22", "LG": str(x)} for x in (-2.3, -2.8, -3.1, -2.5, -2.76)]
+    rows = aude + [paraza] + brittany
+    assert fix_flipped_longitudes(rows) == 1
+    assert paraza["LG"] == "2.83"
+    assert all(float(r["LG"]) < 0 for r in brittany)

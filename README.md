@@ -9,10 +9,11 @@ Each answer shows how many people have the factor, how many chance would predict
 1. **`pipeline/fetch_wikidata.py`** downloads people from Wikidata (CC0) who have an exact birth date and an occupation. It stores no names.
 2. **`pipeline/aggregate.py`** computes each chart with [Astronomy Engine](https://github.com/cosinekitty/astronomy) (MIT). It then writes one small JSON file of observed counts, expected counts and variances for every group and chart factor.
 3. **`site/`** is a static page that loads that JSON and does the statistics in the browser. It needs no server, so GitHub Pages hosts it for free.
+4. **`pipeline/build_quiz.py`** builds the deck for **Guess the Chart** (`site/guess.html`), a practice game: players read about a real person and guess their rising sign, Moon sign, element, or pick their real chart out of three. Scores are compared with luck, where each guess's chance is how common that answer is in the deck (signs don't rise equally often at European latitudes). Birth days are hidden because they give away the Sun and narrow down the Moon. Players can also add people they know (stored only in their browser, with a backup file); those charts are computed in the browser by `site/js/chart.js`, and the luck of a rising-sign guess comes from how often each sign rises at the birthplace's latitude.
 
 The site also has three methods pages that explain whole-chart analysis with live demos: `vectors.html` (turning a chart into numbers), `trees.html` (gradient-boosted trees, with a small boosting demo on simulated people) and `gnn.html` (graph neural networks). They compute planet positions in the browser with a copy of Astronomy Engine in `site/js/vendor/`.
 
-The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from the Actions tab. **Deploy site** publishes `site/` to GitHub Pages.
+The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from the Actions tab. **Build quiz deck** refreshes the game's deck monthly. **Deploy site** publishes `site/` to GitHub Pages.
 
 ## The statistics
 
@@ -28,11 +29,12 @@ pip install -r requirements.txt
 python pipeline/make_demo.py demo.csv            # fake data for development
 python pipeline/aggregate.py demo.csv site/data/demo.json --name "Demo data (fake)" --demo --register site/data/datasets.json
 cd site && python -m http.server 8000             # open http://localhost:8000
-python -m pytest tests && node --test tests/stats.test.mjs
+python -m pytest tests && node --test tests/*.mjs
 ```
 
 ## Data and licenses
 
 - Wikidata: CC0. Results describe people notable enough for Wikidata, not the general population.
+- Open Gauquelin Database: CC BY-SA 4.0. Timed birth records from French and European civil registers, collected by Michel and Françoise Gauquelin. `site/data/quiz.json` is derived from it and shares its license.
 - Astro-Databank: not used. It needs written permission from Astrodienst AG.
 - Occupation groups are mapped from Wikidata occupation labels in `pipeline/occupations.json`.

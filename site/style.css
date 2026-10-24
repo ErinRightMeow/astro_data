@@ -105,6 +105,20 @@ tr.sig td:first-child { font-weight: 600; }
 .methods li { margin-bottom: 8px; }
 footer { padding-bottom: 40px; }
 a { color: var(--accent); }
+.check { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; }
+.clues { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 0 0 16px; }
+.clues div { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+.clues dt { font-size: 0.8rem; color: var(--muted); }
+.clues dd { margin: 0; font-weight: 600; }
+.choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.choices.wide { grid-template-columns: 1fr; }
+.choices button { padding: 10px; text-align: center; }
+.choices button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); font-weight: 600; }
+.choices button.wrong { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.choices button:disabled { cursor: default; }
+.verdict-line { font-weight: 600; margin: 0 0 4px; }
+.verdict-line.strong { color: var(--good); }
+.verdict-line.weak { color: var(--warn); }
 
 /* Explainer pages */
 .nav { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0 0; font-size: 0.95rem; }
@@ -177,3 +191,18 @@ input[type="date"] { font: inherit; color: var(--text); background: var(--surfac
 .bars-list .fillbar { height: 12px; border-radius: 0 4px 4px 0; background: var(--series-a); }
 .bars-list .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
 button:disabled { opacity: 0.6; cursor: progress; }
+.row.spaced { margin-top: 12px; }
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 12px 0; }
+.form label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; color: var(--muted); }
+.form .full { grid-column: 1 / -1; }
+.form input, .form textarea { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; width: 100%; }
+.form .inline { display: flex; gap: 8px; }
+.form summary { cursor: pointer; color: var(--accent); }
+.form p { margin: 0; }
+.people { list-style: none; padding: 0; margin: 12px 0; }
+.people li { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.people .notes { color: var(--muted); font-size: 0.9rem; }
+.clues .notes-clue { grid-column: 1 / -1; }
+.clues .notes-clue dd { font-weight: 400; white-space: pre-wrap; }
+.button-like { font: inherit; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; background: var(--surface); }
+[hidden] { display: none !important; }
