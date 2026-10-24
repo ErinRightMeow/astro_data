@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "pipeline"))
-from build_quiz import birth_utc, card, east_sign, parse_offset, read_rows  # noqa: E402
+from build_quiz import birth_utc, card, fix_flipped_longitudes, parse_offset, read_rows  # noqa: E402
 
 
 def test_offsets():
@@ -35,8 +35,11 @@ def test_unusable_rows_are_skipped():
     assert card({"DATE-UT": "1900-01-01 00:00", "LG": "2", "LAT": "48", "OCCU": ""}) is None
 
 
-def test_west_positive_longitudes_are_detected():
-    paris_west = [{"CY": "FR", "LG": "-2.34"}, {"CY": "FR", "LG": "-5.4"}, {"CY": "FR", "LG": "4.5"}]
-    assert east_sign(paris_west) == -1
-    assert east_sign([{"CY": "FR", "LG": "2.34"}]) == 1
-    assert east_sign([{"CY": "US", "LG": "-74"}]) == 1
+def test_flipped_longitudes_are_repaired():
+    aude = [{"CY": "FR", "C2": "11", "LG": str(x)} for x in (2.35, 2.8, 2.9, 3.0, 2.5)]
+    paraza = {"CY": "FR", "C2": "11", "LG": "-2.83"}
+    brittany = [{"CY": "FR", "C2": "22", "LG": str(x)} for x in (-2.3, -2.8, -3.1, -2.5, -2.76)]
+    rows = aude + [paraza] + brittany
+    assert fix_flipped_longitudes(rows) == 1
+    assert paraza["LG"] == "2.83"
+    assert all(float(r["LG"]) < 0 for r in brittany)

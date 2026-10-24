@@ -82,22 +82,42 @@ def occupation_label(code):
     return code.strip().replace("-", " ").capitalize()
 
 
-def east_sign(rows):
-    """+1 if LG counts degrees east, -1 if it counts west (as in some exports).
+def fix_flipped_longitudes(rows):
+    """Repair records whose longitude has the wrong sign, in place.
 
-    Decided from French births, which are almost all east of Greenwich.
+    Some records give an eastern town a western longitude (Paraza, Aude, is
+    listed at -2.83 instead of 2.83). A record is flipped back when the
+    other sign puts it much nearer the other births in its region
+    (country plus C2, e.g. the French département). Returns the count fixed.
     """
-    lons = sorted(float(r["LG"]) for r in rows if r.get("CY") == "FR" and r.get("LG"))
-    if not lons:
-        return 1
-    return 1 if lons[len(lons) // 2] >= 0 else -1
+    by_region = {}
+    for r in rows:
+        try:
+            lon = float(r["LG"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        by_region.setdefault((r.get("CY"), r.get("C2")), []).append(lon)
+    medians = {k: sorted(v)[len(v) // 2] for k, v in by_region.items() if len(v) >= 5}
+    fixed = 0
+    for r in rows:
+        med = medians.get((r.get("CY"), r.get("C2")))
+        try:
+            lon = float(r["LG"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        if med is not None and abs(lon - med) > 1.5 and abs(-lon - med) < abs(lon - med) / 2:
+            r["LG"] = str(-lon)
+            fixed += 1
+            if fixed <= 5:
+                print(f"  {r.get('OGID')}: longitude {lon} -> {-lon}", file=sys.stderr)
+    return fixed
 
 
-def card(row, lon_sign=1):
+def card(row):
     """One deck entry, or None if the record can't be used."""
     try:
         dt = birth_utc(row)
-        lat, lon = float(row["LAT"]), lon_sign * float(row["LG"])
+        lat, lon = float(row["LAT"]), float(row["LG"])
     except (KeyError, ValueError, TypeError):
         return None
     if not (-66 < lat < 66) or not (-180 <= lon <= 180):
@@ -135,15 +155,14 @@ def main():
     for r in rows[:3]:
         print("Sample:", {k: r.get(k) for k in ("OGID", "DATE", "TZO", "DATE-UT", "LAT", "LG", "CY", "OCCU")}, file=sys.stderr)
 
-    lon_sign = east_sign(rows)
-    print(f"Longitudes count {'east' if lon_sign > 0 else 'west'} as positive.", file=sys.stderr)
+    print(f"Fixed {fix_flipped_longitudes(rows)} longitudes with the wrong sign.", file=sys.stderr)
 
     # Sample before computing charts: a fixed seed keeps the deck stable
     # between rebuilds so players' scores stay comparable.
     random.Random(1955).shuffle(rows)
     cards, skipped = [], 0
     for r in rows:
-        c = card(r, lon_sign)
+        c = card(r)
         if c is None:
             skipped += 1
             continue
