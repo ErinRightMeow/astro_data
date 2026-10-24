@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Graph Neural Network</title>
+  <meta name="description" content="How a graph neural network reads a natal chart as planets linked by aspects, and what it would take to use one.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <h1>Graph neural network</h1>
+    <p class="tagline">A model that reads a chart the way an astrologer does: as planets connected by aspects, not as a flat list of numbers.</p>
+    <nav class="nav" aria-label="Methods">
+      <a href="index.html">Test a claim</a>
+      <a href="vectors.html">1. Chart as a vector</a>
+      <a href="trees.html">2. Boosted trees</a>
+      <a href="gnn.html" aria-current="page">3. Graph neural network</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Where this fits</h2>
+      <p class="lead">This is the alternative to <a href="trees.html">boosted trees</a> for step 2. Both try to predict something about people from their charts, and both face the same tests. The difference is the input: trees get one long row of numbers, while a graph neural network (GNN) gets the chart's <em>structure</em>, meaning which planets connect to which and how.</p>
+    </section>
+
+    <section class="card" aria-labelledby="graph-h">
+      <h2 id="graph-h">Step 1: A chart is a graph</h2>
+      <p>In a graph, <strong>nodes</strong> are things and <strong>edges</strong> are links between them. Here each planet is a node, and each aspect is an edge.</p>
+      <div class="math">Node i (a planet):   x_i = [ cos λ, sin λ, sign one-hot (12), element (4), retrograde (1) ]
+Edge i–j (an aspect): type (conjunction, sextile, square, trine, opposition)
+                      strength s_ij = max(0, 1 − |θ − aspect angle| / orb)   (from step 5 of Chart as a vector)</div>
+      <div class="controls">
+        <label>Birth date <input type="date" id="g-date" value="1990-06-15" min="1800-01-01" max="2100-12-31"></label>
+      </div>
+      <div class="viz">
+        <div id="g-graph"></div>
+        <div>
+          <p class="small">Planets sit at their place in the zodiac, and lines are aspects. Thicker lines are tighter aspects. Hover a line for details.</p>
+          <div class="legend" style="flex-direction: column; gap: 6px;">
+            <span><span class="key a"></span>Flowing: sextile, trine</span>
+            <span><span class="key b"></span>Hard: square, opposition</span>
+            <span><span class="key c"></span>Conjunction</span>
+          </div>
+          <p id="g-count" class="muted small"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="mp-h">
+      <h2 id="mp-h">Step 2: Message passing</h2>
+      <p>A GNN works in rounds. In each round, every planet collects a "message" from the planets it aspects, weighted by the aspect's type and strength, and updates its own description. The weights <code>W</code> are what the model learns.</p>
+      <div class="math">Start:          h_i⁽⁰⁾ = x_i
+Message:        m_i = Σ over aspected planets j   s_ij · W_type(i,j) · h_j⁽ᵏ⁾
+Update:         h_i⁽ᵏ⁺¹⁾ = ReLU( W_self · h_i⁽ᵏ⁾ + m_i )
+
+After K rounds, pool the planets into one chart vector and predict:
+  g = mean of h_i⁽ᴷ⁾ over all planets
+  p(athlete) = σ( wᵀ [ g , birth year, birth month ] + b )</div>
+      <p>Each round lets information travel one more aspect. After one round, a planet "knows" about the planets it aspects. After two rounds, it knows about their aspects too, which is enough to see a T-square or a grand trine. Click a planet and move the slider to see how far its information reaches.</p>
+      <div class="controls">
+        <label>Rounds K <input type="range" id="g-k" min="0" max="3" value="1"> <strong id="g-k-v"></strong></label>
+        <label>Planet <select id="g-focus"></select></label>
+      </div>
+      <div class="viz">
+        <div id="g-reach"></div>
+        <div id="g-reach-text" class="readout"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="why-h">
+      <h2 id="why-h">Step 3: Why it's a natural fit</h2>
+      <ol>
+        <li><strong>It sees patterns as shapes.</strong> A grand trine is a triangle of trine edges, and a T-square is an opposition with a square to both ends. A GNN can learn these from the structure instead of needing a hand-made "grand trine" flag.</li>
+        <li><strong>Order doesn't matter.</strong> Listing the planets in a different order gives the same answer, as it should.</li>
+        <li><strong>It grows easily.</strong> Adding the Ascendant, MC, lunar nodes, Chiron or asteroids just adds nodes and edges. The model's design doesn't change.</li>
+        <li><strong>Same weights everywhere.</strong> A "square" weight learned from Mars–Saturn is shared with every other square. That's a built-in assumption that aspects mean something by type, which is itself a testable claim. Separate weights per planet pair would test the opposite.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="cost-h">
+      <h2 id="cost-h">Step 4: The catch</h2>
+      <p>GNNs have many more adjustable weights than trees and need much more data before they stop memorizing noise. On tables of a few hundred features and tens of thousands of rows, boosted trees usually match or beat neural networks. So the plan is to run the GNN <strong>after</strong> the trees, on the same split, and take it seriously only if it beats both the trees and the baseline on held-out people.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th></th><th>Boosted trees</th><th>Graph neural network</th></tr></thead>
+          <tbody>
+            <tr><td>Input</td><td>One row of ≈ 380 numbers</td><td>10 to 14 nodes, up to 91 edges</td></tr>
+            <tr><td>Finds combinations</td><td>By splitting inside splits</td><td>By passing messages along aspects</td></tr>
+            <tr><td>People needed</td><td>Thousands</td><td>Tens to hundreds of thousands</td></tr>
+            <tr><td>Training</td><td>Seconds on a laptop</td><td>Minutes to hours, ideally a GPU</td></tr>
+            <tr><td>Explaining a result</td><td>SHAP values per feature</td><td>Edge and node importance (for example GNNExplainer)</td></tr>
+            <tr><td>Main risk</td><td>Finding birth-date effects</td><td>Same, plus overfitting small data</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="callout">The same tests apply as on the <a href="trees.html">trees page</a>. Birth year and month go into the final step, so the model has a baseline to beat. Then come shuffled labels, held-out people and a second dataset. A GNN's flexibility makes these tests more important, not less.</p>
+    </section>
+
+    <section class="card methods" aria-labelledby="real-h">
+      <h2 id="real-h">On the real data</h2>
+      <ol>
+        <li>Build one graph per person with PyTorch Geometric: planet nodes, aspect edges, and Ascendant and MC nodes when there's a birth time.</li>
+        <li>Use a relational GNN (separate weights per aspect type), 2 or 3 rounds, small hidden size (about 32), dropout and early stopping.</li>
+        <li>Train on the same 70% exploration split as the trees. Compare held-out AUC against the trees and the birth-date baseline.</li>
+        <li>Run the shuffled-label test, at least 50 times given the training cost.</li>
+        <li>For any group that passes, find which aspects mattered most, then confirm on the hold-out and a second dataset.</li>
+      </ol>
+      <p class="muted small">A realistic order is trees first, then a GNN only if the data grows to hundreds of thousands of charts, for example through Astro-Databank permission or site submissions.</p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT).
+  </footer>
+
+  <script src="js/vendor/astronomy.browser.min.js"></script>
+  <script type="module" src="js/gnn.js"></script>
+</body>
+</html>

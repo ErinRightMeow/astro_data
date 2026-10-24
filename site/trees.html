@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boosted Trees</title>
+  <meta name="description" content="How gradient-boosted trees search whole charts for combinations, and how to tell a real signal from noise.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <h1>Gradient-boosted trees</h1>
+    <p class="tagline">A model that searches thousands of chart features for combinations that predict something about people, and the tests that keep it honest.</p>
+    <nav class="nav" aria-label="Methods">
+      <a href="index.html">Test a claim</a>
+      <a href="vectors.html">1. Chart as a vector</a>
+      <a href="trees.html" aria-current="page">2. Boosted trees</a>
+      <a href="gnn.html">3. Graph neural network</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Where this fits</h2>
+      <p class="lead">This is step 2. It takes the numbers from <a href="vectors.html">Chart as a vector</a> and learns to predict something about a person, such as whether they're an athlete. If charts carry no information about athletes, the model can't beat a model that knows only the birth date. The tool used in practice is <strong>LightGBM</strong>; the demo below is a small version of the same algorithm running in your browser.</p>
+    </section>
+
+    <section class="card" aria-labelledby="tree-h">
+      <h2 id="tree-h">Step 1: One tree is a set of yes/no questions</h2>
+      <p>A decision tree splits people with questions like "Is Mars's longitude under 30°?" Each question is picked because it best separates the people the model is currently getting wrong. After a few questions, each group (a <strong>leaf</strong>) gets a score that nudges the prediction up or down.</p>
+      <p>Trees find <strong>combinations</strong> on their own. A second question asked only inside the first answer's group ("…and is the Moon in a water sign?") is an interaction, so no one has to list combinations in advance. This is the first tree the demo below learned:</p>
+      <div id="first-tree" class="tree"><p class="muted">Training…</p></div>
+    </section>
+
+    <section class="card" aria-labelledby="math-h">
+      <h2 id="math-h">Step 2: Boosting adds many small trees</h2>
+      <p>One tree is crude. Boosting builds hundreds of them, each one fixing the mistakes left by the trees before it. For a yes/no outcome like "athlete", the model's score is a log-odds that turns into a probability.</p>
+      <div class="math">Score after m trees:      F_m(x) = F_0 + η · [ f_1(x) + f_2(x) + … + f_m(x) ]
+Probability:              p = 1 / (1 + e^(−F))
+Loss (log loss):          L = −[ y · log p + (1 − y) · log(1 − p) ]
+
+For each person, before adding a tree:
+  gradient   g = p − y            (how wrong, and in which direction)
+  hessian    h = p · (1 − p)      (how sure the model already is)
+
+A split is chosen to maximize
+  Gain = G_L² / (H_L + λ) + G_R² / (H_R + λ) − G² / (H + λ)
+  (G and H are the sums of g and h in each group; λ keeps small groups from overreacting)
+
+Each leaf's score:        w = −G / (H + λ)
+η (learning rate) shrinks every tree so no single tree dominates.</div>
+      <p class="muted small">LightGBM speeds this up by sorting each feature into a few hundred bins and growing trees leaf by leaf. The demo uses 32 bins, trees 3 questions deep, η = 0.1 and λ = 1.</p>
+    </section>
+
+    <section class="card" aria-labelledby="demo-h">
+      <h2 id="demo-h">Step 3: Try it on simulated people</h2>
+      <p>This demo makes 6,000 pretend people with real skies: random birth dates from 1900 to 1999, with planet positions computed for each one. The model sees 97 numbers per person: each planet's longitude and element, the separation of every planet pair, and the birth month and year. It then decides who is an "athlete" using rules you choose, so you know the truth in advance and can see whether the model finds it.</p>
+      <div class="controls">
+        <label>Planted chart effect
+          <select id="t-chart">
+            <option value="0">none</option>
+            <option value="1.2">weak</option>
+            <option value="2.5" selected>strong</option>
+          </select>
+        </label>
+        <label>Birth-season effect
+          <select id="t-season">
+            <option value="0">none</option>
+            <option value="0.9" selected>on</option>
+          </select>
+        </label>
+        <button id="t-run" class="primary">Train</button>
+      </div>
+      <p class="muted small"><strong>Chart effect:</strong> athletes are more likely when Mars is in a fire sign (Aries, Leo, Sagittarius) <em>and</em> the Moon is in a water sign (Cancer, Scorpio, Pisces). About 1 person in 16 has both. <strong>Season effect:</strong> people born January to March are more likely to be athletes, like the school-cutoff effect in real sports data. It has nothing to do with planets.</p>
+      <div class="chart" id="t-chart-auc"></div>
+      <div class="legend">
+        <span><span class="key a"></span>Full chart model</span>
+        <span><span class="key b"></span>Birth-date-only baseline</span>
+        <span><span class="key c"></span>Full model, shuffled labels</span>
+      </div>
+      <p class="muted small">The y-axis is AUC on the 30% of people the model never trained on. 0.5 means guessing; 1.0 means perfect. Hover for exact values.</p>
+      <div id="t-verdict" class="verdict-box" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="read-h">
+      <h2 id="read-h">Step 4: How to read the result</h2>
+      <ol>
+        <li><strong>Only the gap counts.</strong> The baseline knows birth year and month. Turn the chart effect off and leave the season effect on: the full model scores well above 0.5, but no higher than the baseline. Season is doing all the work, and the stars add nothing.</li>
+        <li><strong>The shuffle test.</strong> Shuffling who is an athlete breaks any real link. Whatever score the model still gets is pure luck. On real data, retrain on about 200 shuffles and the real model has to beat all of them.</li>
+        <li><strong>Held-out people.</strong> All scores here are on people the model never saw. Training-set scores always look good and mean nothing.</li>
+        <li><strong>Replication.</strong> A real result has to show up again on a separate dataset, for example Gauquelin's records after training on Wikidata.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="shap-h">
+      <h2 id="shap-h">Step 5: Which chart factors did it use?</h2>
+      <p>When the model beats the baseline, the next question is what it found. The bars show how much each feature improved the model in total (the summed split gain). In real analysis, <strong>SHAP values</strong> give a fairer version of this: for each person, they split the prediction into each feature's contribution, and those contributions add up exactly to the model's score.</p>
+      <div class="math">SHAP:  F(x) = average score + φ₁ + φ₂ + … + φₙ
+       φᵢ = feature i's average effect on the score, over every order the features could be added in</div>
+      <div id="t-importance" class="bars-list"></div>
+      <p class="muted small">With the strong chart effect on, "Mars in fire sign" and "Moon in water sign" should rise to the top. With it off, the importance list is mostly birth month plus noise.</p>
+    </section>
+
+    <section class="card methods" aria-labelledby="real-h">
+      <h2 id="real-h">On the real data</h2>
+      <ol>
+        <li>Build the feature list from <a href="vectors.html">Chart as a vector</a> for every person, about 380 numbers without birth times.</li>
+        <li>Fit LightGBM to predict each occupation group, on the 70% exploration split, with early stopping chosen by cross-validation.</li>
+        <li>Fit the birth-date-only baseline the same way, and report the held-out AUC gap with a 95% range.</li>
+        <li>Repeat with shuffled labels within each birth year about 200 times, and give the share of shuffles that matched or beat the real gap.</li>
+        <li>Show SHAP for any group that passes, then try to confirm it on the 30% hold-out and on a second dataset.</li>
+      </ol>
+      <p>Next: <a href="gnn.html">a model that reads the chart as a network of planets →</a></p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT).
+  </footer>
+
+  <script src="js/vendor/astronomy.browser.min.js"></script>
+  <script type="module" src="js/trees.js"></script>
+</body>
+</html>
