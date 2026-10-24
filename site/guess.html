@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess the Chart</title>
+  <meta name="description" content="Practice guessing a natal chart from what you know about a person, and find out if you beat chance.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <p class="small"><a href="./">← Astro Trends</a></p>
+    <h1>Guess the Chart</h1>
+    <p class="tagline">Read about a real person, guess part of their birth chart, and see whether your hit rate beats luck.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card" aria-labelledby="mode-h">
+      <div class="row">
+        <h2 id="mode-h">What to guess</h2>
+        <select id="mode" aria-label="What to guess">
+          <option value="asc-element">Rising sign's element</option>
+          <option value="asc-sign">Rising sign</option>
+          <option value="moon-element">Moon sign's element</option>
+          <option value="moon-sign">Moon sign</option>
+          <option value="pick">Pick the real chart (1 of 3)</option>
+        </select>
+      </div>
+      <label class="small check"><input type="checkbox" id="show-name"> Show names before guessing (lets you look people up, but don't look up their charts)</label>
+    </section>
+
+    <section class="card" aria-labelledby="person-h" id="play">
+      <h2 id="person-h">This person</h2>
+      <p id="loading" class="muted">Loading people…</p>
+      <dl id="clues" class="clues" hidden></dl>
+      <div id="choices" class="choices" role="group" aria-label="Your guess"></div>
+      <div id="feedback" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="score-h">
+      <div class="row">
+        <h2 id="score-h">Your score</h2>
+        <button id="reset" class="small">Start over</button>
+      </div>
+      <div id="score" class="stats"></div>
+      <p id="verdict" class="verdict-line"></p>
+      <p class="muted small" id="score-note"></p>
+    </section>
+
+    <section class="card methods" aria-labelledby="how-h">
+      <h2 id="how-h">How to train, and how this keeps score honestly</h2>
+      <ol>
+        <li><strong>Start coarse.</strong> Guess the element of the rising sign before the exact sign. Pure guessing gets about 1 in 4, so real skill would show up sooner.</li>
+        <li><strong>Chance is worked out for you.</strong> At European latitudes some signs rise much more often than others (Virgo and Libra rise slowly, so they're common). Each guess counts as lucky in proportion to how common that answer is in the deck, so always picking the most common sign doesn't count as skill.</li>
+        <li><strong>The birth day is hidden.</strong> The date would give away the Sun sign and narrow down the Moon. You see the birth year, which only fixes the slow planets.</li>
+        <li><strong>Give it 100 guesses.</strong> Short runs swing wildly. If you do beat chance, start over and see if a fresh 100 does it again. One good run in twenty happens by luck.</li>
+        <li><strong>"Pick the real chart"</strong> is the format of the Carlson (1985) and Vernon Clark studies: one real chart and two from other people in the deck. Luck gets exactly 1 in 3.</li>
+      </ol>
+      <p class="muted small">Your guesses stay in this browser and are never sent anywhere.</p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Birth data: <a href="https://opengauquelin.org">Open Gauquelin Database</a> (CC BY-SA 4.0), from civil-register birth records collected by Michel and Françoise Gauquelin.
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT). Whole-sign Ascendant.
+    <span id="built"></span>
+  </footer>
+
+  <script type="module" src="js/guess.js"></script>
+</body>
+</html>

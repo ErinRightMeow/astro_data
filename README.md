@@ -10,7 +10,9 @@ Each answer shows how many people have the factor, how many chance would predict
 2. **`pipeline/aggregate.py`** computes each chart with [Astronomy Engine](https://github.com/cosinekitty/astronomy) (MIT). It then writes one small JSON file of observed counts, expected counts and variances for every group and chart factor.
 3. **`site/`** is a static page that loads that JSON and does the statistics in the browser. It needs no server, so GitHub Pages hosts it for free.
 
-The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from the Actions tab. **Deploy site** publishes `site/` to GitHub Pages.
+4. **`pipeline/build_quiz.py`** builds the deck for **Guess the Chart** (`site/guess.html`), a practice game: players read about a real person and guess their rising sign, Moon sign, element, or pick their real chart out of three. Scores are compared with luck, where each guess's chance is how common that answer is in the deck (signs don't rise equally often at European latitudes). Birth days are hidden because they give away the Sun and narrow down the Moon.
+
+The **Build data** GitHub Action runs steps 1 and 2 monthly, or on demand from the Actions tab. **Build quiz deck** refreshes the game's deck monthly. **Deploy site** publishes `site/` to GitHub Pages.
 
 ## The statistics
 
@@ -26,11 +28,12 @@ pip install -r requirements.txt
 python pipeline/make_demo.py demo.csv            # fake data for development
 python pipeline/aggregate.py demo.csv site/data/demo.json --name "Demo data (fake)" --demo --register site/data/datasets.json
 cd site && python -m http.server 8000             # open http://localhost:8000
-python -m pytest tests && node --test tests/stats.test.mjs
+python -m pytest tests && node --test tests/*.mjs
 ```
 
 ## Data and licenses
 
 - Wikidata: CC0. Results describe people notable enough for Wikidata, not the general population.
+- Open Gauquelin Database: CC BY-SA 4.0. Timed birth records from French and European civil registers, collected by Michel and Françoise Gauquelin. `site/data/quiz.json` is derived from it and shares its license.
 - Astro-Databank: not used. It needs written permission from Astrodienst AG.
 - Occupation groups are mapped from Wikidata occupation labels in `pipeline/occupations.json`.
