@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chart as a Vector</title>
+  <meta name="description" content="How a whole natal chart becomes a list of numbers a model can compare and learn from.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="wrap">
+    <h1>Chart as a vector</h1>
+    <p class="tagline">How a whole natal chart becomes a list of numbers that a computer can compare and learn from.</p>
+    <nav class="nav" aria-label="Methods">
+      <a href="index.html">Test a claim</a>
+      <a href="vectors.html" aria-current="page">1. Chart as a vector</a>
+      <a href="trees.html">2. Boosted trees</a>
+      <a href="gnn.html">3. Graph neural network</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <h2>Where this fits</h2>
+      <p class="lead">Testing one factor at a time ("Mars in Aries") misses combinations. To look at whole charts, every chart first has to become the same-length list of numbers, called a <strong>vector</strong>. This page is step 1. The <a href="trees.html">boosted-trees</a> and <a href="gnn.html">graph neural network</a> pages are two different models that learn from these numbers.</p>
+      <p class="muted small">Charts below are computed live in your browser with Astronomy Engine, using the same tropical, geocentric positions as the rest of the site, at 12:00 UTC.</p>
+    </section>
+
+    <section class="card" aria-labelledby="circle-h">
+      <h2 id="circle-h">Step 1: A planet's place is a point on a circle</h2>
+      <p>A planet's position is an angle, its ecliptic longitude <code>λ</code>, from 0° (0° Aries) to 360°. There are three common ways to store it, and only one of them keeps "close in the sky" equal to "close in the numbers."</p>
+      <div class="math">Sign only (one-hot):   12 slots, a 1 in the planet's sign and 0 elsewhere
+Raw degrees:           λ
+On the circle:         ( cos λ , sin λ )
+
+Distance on the circle between λA and λB (the straight-line chord):
+  d = √[(cos λA − cos λB)² + (sin λA − sin λB)²] = 2 · sin(Δ / 2)
+  where Δ is the shorter angle between them (0° to 180°)</div>
+      <p>Move the two points. Try 29° Aries against 1° Taurus: one-hot calls them completely different signs, raw degrees calls them close, and the circle agrees. Then try 359° against 1°: raw degrees says they're as far apart as possible, but they're 2° apart in the sky.</p>
+      <div class="controls">
+        <label><span class="key a" aria-hidden="true"></span>Point A <input type="range" id="c-a" min="0" max="359" value="29"></label>
+        <label><span class="key b" aria-hidden="true"></span>Point B <input type="range" id="c-b" min="0" max="359" value="31"></label>
+      </div>
+      <div class="chips">
+        <button data-a="29" data-b="31">29° Aries vs 1° Taurus</button>
+        <button data-a="1" data-b="29">1° Aries vs 29° Aries</button>
+        <button data-a="359" data-b="1">29° Pisces vs 1° Aries</button>
+        <button data-a="0" data-b="180">Opposite points</button>
+      </div>
+      <div class="viz">
+        <div id="c-wheel"></div>
+        <div class="readout" id="c-readout"></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="chart-h">
+      <h2 id="chart-h">Step 2: A whole chart is 20 numbers</h2>
+      <p>Do that for all 10 planets and a chart becomes 20 numbers: the cosine and sine of each planet's longitude. Every sign combination is in there automatically, because two charts only look alike when most of their planets are close.</p>
+      <div class="math">v(chart) = [ cos λ☉, sin λ☉, cos λ☽, sin λ☽, … , cos λ♇, sin λ♇ ]   (20 numbers, each from −1 to 1)</div>
+      <div class="controls">
+        <label>Birth date <input type="date" id="v-date" value="1990-06-15" min="1800-01-01" max="2100-12-31"></label>
+      </div>
+      <div class="viz">
+        <div id="v-wheel"></div>
+        <div>
+          <p class="strip-label">The chart's vector. Each column is one planet. The top row is <code>cos λ</code> and the bottom row is <code>sin λ</code>. Blue cells are positive and orange cells are negative; the stronger the color, the further from 0.</p>
+          <div id="v-strip"></div>
+          <div class="legend"><span><span class="key a"></span>positive (up to +1)</span><span><span class="key b"></span>negative (down to −1)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="dist-h">
+      <h2 id="dist-h">Step 3: How similar are two charts?</h2>
+      <p>The distance between two charts adds up the planet-by-planet chord distances from step 1. A weight <code>w</code> lets you count some planets more than others; this page uses equal weights.</p>
+      <div class="math">D(A, B) = √[ Σ over planets  w · dₚ² ]      dₚ = 2 · sin(Δₚ / 2)
+Similarity = 1 − D / Dmax        (1 = identical charts, 0 = every planet opposite)</div>
+      <div class="controls">
+        <label><span class="key a" aria-hidden="true"></span>Chart A <input type="date" id="d-a" value="1990-06-15" min="1800-01-01" max="2100-12-31"></label>
+        <label><span class="key b" aria-hidden="true"></span>Chart B <input type="date" id="d-b" value="1990-06-17" min="1800-01-01" max="2100-12-31"></label>
+      </div>
+      <div class="chips" id="d-presets">
+        <button data-days="2">2 days apart</button>
+        <button data-days="365.25">1 year apart</button>
+        <button data-days="4383">12 years apart (Jupiter return)</button>
+        <button data-days="182">6 months apart</button>
+      </div>
+      <p id="d-total" class="verdict"></p>
+      <div class="chart" id="d-bars"></div>
+      <p class="muted small">Bars show each planet's chord distance, from 0 (same place) to 2 (opposite sides). Hover a bar for the exact positions.</p>
+    </section>
+
+    <section class="card" aria-labelledby="conf-h">
+      <h2 id="conf-h">Step 4: Why "similar charts" mostly means "similar birth dates"</h2>
+      <p>This chart compares Chart A from step 3 with every chart from 15 years before to 15 years after. The fast planets (Sun, Mercury, Venus, Mars) come back to nearly the same place every year, so their line dips sharply on every birthday. The slow planets (Jupiter to Pluto) are only close for people born within about a year of each other, with a partial dip about 12 years away, when Jupiter comes back around.</p>
+      <div class="chart" id="conf-chart"></div>
+      <div class="legend"><span><span class="key a"></span>Fast planets: Sun, Mercury, Venus, Mars</span><span><span class="key b"></span>Slow planets: Jupiter to Pluto</span></div>
+      <p class="callout">That's the main trap. The people whose charts are most like yours are mostly people born near your birthday, in years close to yours. They share a generation and a season, and those alone shape careers and health. So any whole-chart test has to beat a <strong>birth-date-only baseline</strong>: a model that knows the birth year and month but nothing else about the sky. Only the improvement over that baseline counts as an astrology signal.</p>
+      <p class="muted small">The Moon is left out of both lines. It circles the zodiac every 27 days, so at this scale it looks random. That also makes it one of the few factors that season and generation can't explain.</p>
+    </section>
+
+    <section class="card" aria-labelledby="asp-h">
+      <h2 id="asp-h">Step 5: Aspects as strengths, not on/off switches</h2>
+      <p>The test page counts an aspect as either there or not. A model learns more from how <em>tight</em> the aspect is. For each pair of planets, each major aspect gets a strength that is 1 when exact and falls to 0 at the edge of its orb.</p>
+      <div class="math">separation θ = shorter angle between the two planets (0° to 180°)
+strength = max(0, 1 − |θ − aspect angle| / orb)
+
+conjunction 0° orb 8 · sextile 60° orb 4 · square 90° orb 7 · trine 120° orb 7 · opposition 180° orb 8</div>
+      <div class="controls">
+        <label>Separation θ <input type="range" id="a-sep" min="0" max="180" value="95"> <strong id="a-sep-v"></strong></label>
+      </div>
+      <div class="chart" id="a-chart"></div>
+      <p id="a-readout"></p>
+    </section>
+
+    <section class="card methods" aria-labelledby="full-h">
+      <h2 id="full-h">The full feature list</h2>
+      <p>Put together, one chart becomes a few hundred numbers. Models receive the same list for every person.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Part</th><th>How it's encoded</th><th class="num">Numbers</th></tr></thead>
+          <tbody>
+            <tr><td>Planet positions</td><td>cos λ and sin λ for 10 planets</td><td class="num">20</td></tr>
+            <tr><td>Planet signs</td><td>one-hot, 12 slots per planet (lets a model treat sign boundaries as meaningful, as astrology claims)</td><td class="num">120</td></tr>
+            <tr><td>Aspects</td><td>strength for 45 planet pairs × 5 aspects</td><td class="num">225</td></tr>
+            <tr><td>Patterns</td><td>element and modality counts, stelliums, grand trines, T-squares</td><td class="num">≈ 15</td></tr>
+            <tr><td>Ascendant and MC</td><td>cos and sin of each (birth time needed)</td><td class="num">4</td></tr>
+            <tr><td>Houses</td><td>one-hot, 12 houses per planet (birth time needed)</td><td class="num">120</td></tr>
+            <tr><td><strong>Baseline only</strong></td><td>birth year, birth month, hemisphere, country</td><td class="num">≈ 4</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="muted small">Adding the lunar nodes as an 11th body gives 55 pairs and 275 aspect numbers. Most Wikidata records have no birth time, so for them the Ascendant, MC and houses are left out.</p>
+      <p>Next: <a href="trees.html">how gradient-boosted trees learn from these numbers →</a></p>
+    </section>
+  </main>
+
+  <footer class="wrap muted small">
+    Charts computed with <a href="https://github.com/cosinekitty/astronomy">Astronomy Engine</a> (MIT).
+  </footer>
+
+  <script src="js/vendor/astronomy.browser.min.js"></script>
+  <script type="module" src="js/vectors.js"></script>
+</body>
+</html>

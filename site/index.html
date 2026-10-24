@@ -11,7 +11,13 @@
   <header class="wrap">
     <h1>Astro Trends</h1>
     <p class="tagline">Test an astrology claim against real birth data and see whether the numbers back it up.</p>
-    <p class="nav-link small"><a href="guess.html">Play Guess the Chart</a>: practice guessing someone's rising sign or Moon from what you know about them.</p>
+    <nav class="nav" aria-label="Pages">
+      <a href="index.html" aria-current="page">Test a claim</a>
+      <a href="vectors.html">1. Chart as a vector</a>
+      <a href="trees.html">2. Boosted trees</a>
+      <a href="gnn.html">3. Graph neural network</a>
+      <a href="guess.html">Play Guess the Chart</a>
+    </nav>
   </header>
 
   <main class="wrap">
@@ -71,6 +77,7 @@
         <li><strong>Small groups hidden.</strong> Counts under 10 are not shown.</li>
         <li><strong>Who is in the data matters.</strong> Famous people are not a random sample of humanity. A Sun-sign result can come from school cut-off dates (older children excel in youth sports), not the sky.</li>
       </ol>
+      <p>To look at whole charts instead of one factor at a time, see the methods pages: <a href="vectors.html">turning a chart into numbers</a>, <a href="trees.html">gradient-boosted trees</a> and <a href="gnn.html">graph neural networks</a>.</p>
       <p class="muted small">Without a birth time the Ascendant and houses are unknown, and fast factors like the Moon's sign are used only when they were the same all day.</p>
     </section>
   </main>
