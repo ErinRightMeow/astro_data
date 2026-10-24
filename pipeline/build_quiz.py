@@ -82,11 +82,22 @@ def occupation_label(code):
     return code.strip().replace("-", " ").capitalize()
 
 
-def card(row):
+def east_sign(rows):
+    """+1 if LG counts degrees east, -1 if it counts west (as in some exports).
+
+    Decided from French births, which are almost all east of Greenwich.
+    """
+    lons = sorted(float(r["LG"]) for r in rows if r.get("CY") == "FR" and r.get("LG"))
+    if not lons:
+        return 1
+    return 1 if lons[len(lons) // 2] >= 0 else -1
+
+
+def card(row, lon_sign=1):
     """One deck entry, or None if the record can't be used."""
     try:
         dt = birth_utc(row)
-        lat, lon = float(row["LAT"]), float(row["LG"])
+        lat, lon = float(row["LAT"]), lon_sign * float(row["LG"])
     except (KeyError, ValueError, TypeError):
         return None
     if not (-66 < lat < 66) or not (-180 <= lon <= 180):
@@ -124,12 +135,15 @@ def main():
     for r in rows[:3]:
         print("Sample:", {k: r.get(k) for k in ("OGID", "DATE", "TZO", "DATE-UT", "LAT", "LG", "CY", "OCCU")}, file=sys.stderr)
 
+    lon_sign = east_sign(rows)
+    print(f"Longitudes count {'east' if lon_sign > 0 else 'west'} as positive.", file=sys.stderr)
+
     # Sample before computing charts: a fixed seed keeps the deck stable
     # between rebuilds so players' scores stay comparable.
     random.Random(1955).shuffle(rows)
     cards, skipped = [], 0
     for r in rows:
-        c = card(r)
+        c = card(r, lon_sign)
         if c is None:
             skipped += 1
             continue

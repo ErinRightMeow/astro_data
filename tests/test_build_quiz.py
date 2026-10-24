@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "pipeline"))
-from build_quiz import birth_utc, card, parse_offset, read_rows  # noqa: E402
+from build_quiz import birth_utc, card, east_sign, parse_offset, read_rows  # noqa: E402
 
 
 def test_offsets():
@@ -33,3 +33,10 @@ def test_card_from_semicolon_csv():
 def test_unusable_rows_are_skipped():
     assert card({"DATE": "", "TZO": "", "LG": "2", "LAT": "48", "OCCU": "painter"}) is None
     assert card({"DATE-UT": "1900-01-01 00:00", "LG": "2", "LAT": "48", "OCCU": ""}) is None
+
+
+def test_west_positive_longitudes_are_detected():
+    paris_west = [{"CY": "FR", "LG": "-2.34"}, {"CY": "FR", "LG": "-5.4"}, {"CY": "FR", "LG": "4.5"}]
+    assert east_sign(paris_west) == -1
+    assert east_sign([{"CY": "FR", "LG": "2.34"}]) == 1
+    assert east_sign([{"CY": "US", "LG": "-74"}]) == 1
